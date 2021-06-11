@@ -1,0 +1,11 @@
+# 企业id 在【我的企业-企业信息-企业ID】查看
+CorpID = "xxxxxxx"
+
+# 应用Secret 在【应用管理】查看
+Secret = "xxxxxxxx"
+
+# 应用id 在【应用管理】查看
+AgentID = 1000000
+
+# 接收人
+UserIDs = ["xxx"]
