@@ -3,9 +3,12 @@ package main
 import (
 	"fmt"
 	"github.com/BurntSushi/toml"
+	"github.com/getsentry/sentry-go"
 	"github.com/gin-gonic/gin"
 	"github.com/xen0n/go-workwx"
+	"log"
 	"net/http"
+	"os"
 )
 
 type Config struct {
@@ -13,55 +16,68 @@ type Config struct {
 	Secret  string
 	AgentID int64
 	UserIDs []string
+
+	SentryDSN string
 }
 
 var conf Config
 
+func getenv(key, fallback string) string {
+	value := os.Getenv(key)
+	if len(value) == 0 {
+		return fallback
+	}
+
+	return value
+}
+
 func init() {
-	_, err := toml.DecodeFile("config.toml", &conf)
+	configFile := getenv("WX_CONFIG_FILE", "config.toml")
+	_, err := toml.DecodeFile(configFile, &conf)
 	if err != nil {
 		fmt.Println(err)
 	}
 }
 
 func main() {
-	r := gin.Default()
-	r.GET("/ping", func(c *gin.Context) {
+	err := sentry.Init(sentry.ClientOptions{
+		Dsn: conf.SentryDSN,
+	})
+	if err != nil {
+		log.Fatalf("sentry.Init: %s", err)
+	}
+
+	app := gin.Default()
+
+	app.GET("/ping", func(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{
 			"message": "ok",
 		})
 	})
-	r.GET("/", func(c *gin.Context) {
+	app.GET("/", func(c *gin.Context) {
 		msg := c.Query("msg")
 		SendMsg(msg)
 		c.JSON(http.StatusOK, gin.H{
 			"message": msg,
 		})
 	})
-	r.Run()
+	app.Run(":8080")
 }
 
 func SendMsg(msg string) {
-	corpID := conf.CorpID
-	corpSecret := conf.Secret
-	agentID := conf.AgentID
-	userIDs := conf.UserIDs
-	fmt.Printf("corpID:%v, corpSecret:%v, agentID:%v,userIDs:%v\n",
-		corpID, corpSecret, agentID, userIDs)
+	client := workwx.New(conf.CorpID)
 
-	client := workwx.New(corpID)
-
-	app := client.WithApp(corpSecret, agentID)
+	app := client.WithApp(conf.Secret, conf.AgentID)
 	// preferably do this at app initialization
 	app.SpawnAccessTokenRefresher()
 
 	// send to user(s)
-	to1 := workwx.Recipient{
-		UserIDs: userIDs,
+	to := workwx.Recipient{
+		UserIDs: conf.UserIDs,
 	}
-	err := app.SendTextMessage(&to1, msg, false)
+	err := app.SendTextMessage(&to, msg, false)
 	if err != nil {
-		fmt.Printf("SendTextMessage err:%v\n", err)
+		log.Printf("SendTextMessage err:%v\n", err)
 	}
 
 }
