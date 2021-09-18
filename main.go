@@ -61,7 +61,7 @@ func main() {
 			"message": msg,
 		})
 	})
-	app.Run(":8080")
+	app.Run()
 }
 
 func SendMsg(msg string) {
