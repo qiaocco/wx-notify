@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"github.com/BurntSushi/toml"
 	"github.com/getsentry/sentry-go"
 	"github.com/gin-gonic/gin"
@@ -35,7 +34,7 @@ func init() {
 	configFile := getenv("WX_CONFIG_FILE", "config.toml")
 	_, err := toml.DecodeFile(configFile, &conf)
 	if err != nil {
-		fmt.Println(err)
+		log.Fatalf("DecodeFile failed, err=%+v", err)
 	}
 }
 
