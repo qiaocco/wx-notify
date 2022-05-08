@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"github.com/BurntSushi/toml"
 	"github.com/getsentry/sentry-go"
 	"github.com/gin-gonic/gin"
@@ -49,10 +50,18 @@ func main() {
 	app := gin.Default()
 
 	app.GET("/ping", func(c *gin.Context) {
+		ip := c.ClientIP()
+		hostname, err := os.Hostname()
+		if err != nil {
+			log.Fatalf("get hostname failed, err=%+v", err)
+			return
+		}
+
 		c.JSON(http.StatusOK, gin.H{
-			"message": "ok",
+			"message": fmt.Sprintf("Request processed by %v. Client IP: %v", hostname, ip),
 		})
 	})
+
 	app.GET("/", func(c *gin.Context) {
 		msg := c.Query("msg")
 		SendMsg(msg)

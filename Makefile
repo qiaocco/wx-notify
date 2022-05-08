@@ -1,5 +1,7 @@
-IMG ?= wx-notify:latest
 DOCKER_REPO ?= qiaocc
+IMG ?= wx-notify:0.1
+
+docker-release: docker-build docker-push
 
 docker-build:
 	docker build -t ${IMG} .
