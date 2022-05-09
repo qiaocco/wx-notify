@@ -1,5 +1,5 @@
 DOCKER_REPO ?= qiaocc
-IMG ?= wx-notify:0.1
+IMG ?= wx-notify:0.2
 
 docker-release: docker-build docker-push
 

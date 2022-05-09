@@ -11,8 +11,8 @@ ADD go.mod .
 ADD go.sum .
 RUN go mod download
 
-COPY main.go config.toml.bak ./
-RUN go build -ldflags="-s -w" -o /app/wx-notify ./main.go
+COPY main.go controllers.go config.toml.bak ./
+RUN go build -ldflags="-s -w" -o /app/wx-notify
 
 FROM alpine
 

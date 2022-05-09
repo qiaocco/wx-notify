@@ -1,13 +1,11 @@
 package main
 
 import (
-	"fmt"
 	"github.com/BurntSushi/toml"
 	"github.com/getsentry/sentry-go"
 	"github.com/gin-gonic/gin"
 	"github.com/xen0n/go-workwx"
 	"log"
-	"net/http"
 	"os"
 )
 
@@ -48,27 +46,10 @@ func main() {
 	}
 
 	app := gin.Default()
+	app.GET("/", index)
+	app.GET("/ping", ping)
+	app.GET("/secret", secret)
 
-	app.GET("/ping", func(c *gin.Context) {
-		ip := c.ClientIP()
-		hostname, err := os.Hostname()
-		if err != nil {
-			log.Fatalf("get hostname failed, err=%+v", err)
-			return
-		}
-
-		c.JSON(http.StatusOK, gin.H{
-			"message": fmt.Sprintf("Request processed by %v. Client IP: %v", hostname, ip),
-		})
-	})
-
-	app.GET("/", func(c *gin.Context) {
-		msg := c.Query("msg")
-		SendMsg(msg)
-		c.JSON(http.StatusOK, gin.H{
-			"message": msg,
-		})
-	})
 	app.Run()
 }
 
